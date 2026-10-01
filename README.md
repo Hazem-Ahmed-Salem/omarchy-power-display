@@ -2,7 +2,9 @@
 
 An all-in-one **Power, Battery Health & Multi-Monitor Display Refresh Rate Management** plugin and bar widget for the [Omarchy](https://omarchy.org/) shell.
 
-Combines the visual polish, watt graphing, CPU profiling, and power profiles of `austraz.power` with the multi-monitor, resolution-preserving refresh rate automation of `battery-display-profiles`.
+Combines the visual polish, watt graphing, CPU profiling, and power profiles of [austraz.power](https://github.com/austrasien/omarchy-power.git) with the multi-monitor, resolution-preserving refresh rate automation of [battery-display-profiles](https://github.com/Hazem-Ahmed-Salem/battery-display-profiles.git):
+- **austraz.power**: https://github.com/austrasien/omarchy-power.git
+- **battery-display-profiles**: https://github.com/Hazem-Ahmed-Salem/battery-display-profiles.git
 
 ```
 Bar icon  →  Panel flyout  →  Hero stats · 15-min Watt Graph · Top CPU · Power Profiles · Displays & Refresh Rates · Power Saver Opts · Low-Battery Alert
@@ -268,4 +270,4 @@ Run the test suite to verify file structure, JSON validity, and logic:
 ## ⚖️ License
 
 Licensed under the **MIT License**.
-Based on components by austraz, Hazem-Ahmed-Salem, and the Omarchy authors.
+Based on components by [austraz](https://github.com/austrasien/omarchy-power.git), [Hazem-Ahmed-Salem](https://github.com/Hazem-Ahmed-Salem/battery-display-profiles.git), and the Omarchy authors.
