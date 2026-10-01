@@ -1,0 +1,178 @@
+#!/bin/bash
+# austraz.power: apply / query power-saver desktop options.
+
+set -euo pipefail
+
+cmd="${1:-}"
+shift || true
+
+usage() {
+  echo "Usage: power-saver-opts <get|set-hz|set-brightness|set-wifi-ps|set-animations|set-panel-power|apply-saver|apply-other>" >&2
+  exit 2
+}
+
+active_wifi_conn() {
+  nmcli -t -f NAME,TYPE connection show --active 2>/dev/null \
+    | awk -F: '$2 == "802-11-wireless" { print $1; exit }'
+}
+
+active_wifi_iface() {
+  nmcli -t -f DEVICE,TYPE device status 2>/dev/null \
+    | awk -F: '$2 == "wifi" && $1 != "" { print $1; exit }'
+}
+
+wifi_live_ps() {
+  local iface
+  iface=$(active_wifi_iface || true)
+  [[ -n ${iface:-} ]] || { echo off; return 0; }
+  if iw dev "$iface" get power_save 2>/dev/null | grep -qi 'Power save: on'; then
+    echo on
+  else
+    echo off
+  fi
+}
+
+wifi_conn_ps() {
+  local conn val
+  conn=$(active_wifi_conn || true)
+  [[ -n ${conn:-} ]] || { echo off; return 0; }
+  val=$(nmcli -g 802-11-wireless.powersave connection show "$conn" 2>/dev/null || echo default)
+  # nmcli -g prints enable/disable; numeric forms also appear in some versions
+  case "$val" in
+    3|enable|on|yes|true) echo on ;;
+    *) echo off ;;
+  esac
+}
+
+monitor_json() {
+  hyprctl -j monitors 2>/dev/null | python3 -c '
+import json,sys
+ms=json.load(sys.stdin)
+m=next((x for x in ms if x.get("focused")), ms[0] if ms else None)
+if not m:
+  raise SystemExit(1)
+print(json.dumps({
+  "name": m.get("name",""),
+  "width": int(m.get("width") or 0),
+  "height": int(m.get("height") or 0),
+  "refresh": float(m.get("refreshRate") or 0),
+  "scale": float(m.get("scale") or 1),
+  "x": int(m.get("x") or 0),
+  "y": int(m.get("y") or 0),
+}))
+'
+}
+
+set_hz() {
+  local hz="$1"
+  local info name w h mode
+  info=$(monitor_json)
+  name=$(python3 -c 'import json,sys; print(json.load(sys.stdin)["name"])' <<<"$info")
+  w=$(python3 -c 'import json,sys; print(json.load(sys.stdin)["width"])' <<<"$info")
+  h=$(python3 -c 'import json,sys; print(json.load(sys.stdin)["height"])' <<<"$info")
+  mode="${w}x${h}@${hz}"
+  hyprctl eval "hl.monitor({ output = \"${name}\", mode = \"${mode}\" })" >/dev/null
+}
+
+set_brightness() {
+  local pct="$1"
+  (( pct < 1 )) && pct=1
+  (( pct > 100 )) && pct=100
+  brightnessctl set "${pct}%" >/dev/null 2>&1 \
+    || brightnessctl -d amdgpu_bl1 set "${pct}%" >/dev/null 2>&1 || true
+}
+
+set_wifi_ps() {
+  local want="$1" # on|off
+  local conn val live
+  conn=$(active_wifi_conn || true)
+  [[ -n ${conn:-} ]] || return 0
+  if [[ $want == on ]]; then val=3; else val=2; fi
+  nmcli connection modify "$conn" 802-11-wireless.powersave "$val" >/dev/null
+  live=$(wifi_live_ps)
+  if [[ $live == "$want" ]]; then
+    return 0
+  fi
+  # device reapply fails when cloned-mac-address is set; reactivate applies powersave
+  nmcli -w 20 connection up id "$conn" >/dev/null 2>&1 || true
+}
+
+set_animations() {
+  local want="$1" # on|off
+  if [[ $want == on ]]; then
+    hyprctl eval 'hl.config({ animations = { enabled = true } })' >/dev/null
+  else
+    hyprctl eval 'hl.config({ animations = { enabled = false } })' >/dev/null
+  fi
+}
+
+set_panel_power() {
+  local want="$1" # on|off
+  if [[ $want == on ]]; then
+    powerprofilesctl configure-action --enable amdgpu_panel_power >/dev/null 2>&1 || true
+  else
+    powerprofilesctl configure-action --disable amdgpu_panel_power >/dev/null 2>&1 || true
+  fi
+}
+
+get_state() {
+  local info hz bright wifi anim panel
+  info=$(monitor_json)
+  hz=$(python3 -c 'import json,sys; r=json.load(sys.stdin)["refresh"]; print(60 if abs(r-60)<1 else 120)' <<<"$info")
+  bright=$(brightnessctl -m 2>/dev/null | awk -F, '/backlight/{gsub(/%/,"",$4); if($4!="") {print int($4+0.5); exit}}' || true)
+  [[ -n ${bright:-} ]] || bright=50
+
+  if [[ -n $(active_wifi_iface || true) ]]; then
+    wifi=$(wifi_live_ps)
+  else
+    wifi=$(wifi_conn_ps)
+  fi
+
+  anim=on
+  if hyprctl getoption animations:enabled 2>/dev/null | grep -q 'bool: false'; then
+    anim=off
+  fi
+
+  panel=off
+  if powerprofilesctl list-actions 2>/dev/null | awk '
+    $0 == "Name: amdgpu_panel_power" {p=1; next}
+    p && $1 == "Enabled:" {print $2; exit}
+  ' | grep -qi true; then
+    panel=on
+  fi
+
+  printf 'hz\t%s\n' "$hz"
+  printf 'brightness\t%s\n' "$bright"
+  printf 'wifiPowerSave\t%s\n' "$wifi"
+  printf 'animations\t%s\n' "$anim"
+  printf 'panelPower\t%s\n' "$panel"
+}
+
+apply_saver() {
+  # args: hz60(0|1) brightness wifi(0|1) animations(0|1) panel(0|1)
+  local hz60="$1" bright="$2" wifi="$3" anim="$4" panel="$5"
+  if [[ $hz60 == 1 ]]; then set_hz 60; else set_hz 120; fi
+  set_brightness "$bright"
+  if [[ $wifi == 1 ]]; then set_wifi_ps on; else set_wifi_ps off; fi
+  if [[ $anim == 1 ]]; then set_animations on; else set_animations off; fi
+  if [[ $panel == 1 ]]; then set_panel_power on; else set_panel_power off; fi
+}
+
+apply_other() {
+  set_hz 120
+  set_wifi_ps off
+  set_animations on
+  set_panel_power off
+}
+
+case "$cmd" in
+  get) get_state ;;
+  set-hz) set_hz "${1:?}" ;;
+  set-brightness) set_brightness "${1:?}" ;;
+  set-wifi-ps) set_wifi_ps "${1:?}" ;;
+  set-animations) set_animations "${1:?}" ;;
+  set-panel-power) set_panel_power "${1:?}" ;;
+  apply-saver) apply_saver "${1:?}" "${2:?}" "${3:?}" "${4:?}" "${5:?}" ;;
+  apply-other) apply_other ;;
+  *) usage ;;
+esac

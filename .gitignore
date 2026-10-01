@@ -1,0 +1,14 @@
+# Local/editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test/scratch artifacts
+/tests/*.log
+/tests/tmp/

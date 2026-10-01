@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# austraz.power: one-shot battery (+ optional profiles) for the bar panel.
+
+mode="${1:---battery}"
+
+usage() {
+  echo "Usage: power-refresh [--battery|--full]" >&2
+  exit 2
+}
+
+case "$mode" in
+  --battery)
+    exec omarchy-battery-status --shell
+    ;;
+  --full)
+    printf '%s\n' "===battery==="
+    omarchy-battery-status --shell
+    printf '%s\n' "===profiles==="
+    omarchy-powerprofiles-list --active-state
+    ;;
+  *)
+    usage
+    ;;
+esac

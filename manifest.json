@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "id": "hazem.power",
+  "name": "Power & Display Profiles",
+  "version": "1.0.0",
+  "author": "Hazem-Ahmed-Salem",
+  "license": "MIT",
+  "description": "Battery stats, watt graph, top CPU, power profiles, low-battery alert, and automated multi-monitor refresh rate profiles.",
+  "kinds": [
+    "service",
+    "bar-widget"
+  ],
+  "keepLoaded": true,
+  "entryPoints": {
+    "service": "Service.qml",
+    "barWidget": "Panel.qml"
+  },
+  "barWidget": {
+    "displayName": "Power & Display",
+    "description": "Battery stats, watt graph, power profiles, display refresh rates, and low-battery alert",
+    "category": "System",
+    "aliases": [
+      "power",
+      "battery",
+      "display",
+      "refresh rate",
+      "hz",
+      "monitor"
+    ],
+    "defaultSection": "right",
+    "allowMultiple": false,
+    "defaults": {
+      "showPercentage": true,
+      "lowBatteryAlert": 10,
+      "monitors": [],
+      "monitor": "",
+      "acMode": "",
+      "batteryMode": ""
+    },
+    "schema": [
+      {
+        "key": "showPercentage",
+        "type": "boolean",
+        "label": "Show percentage"
+      },
+      {
+        "key": "lowBatteryAlert",
+        "type": "int",
+        "label": "Low battery alert %"
+      },
+      {
+        "key": "monitor",
+        "type": "string",
+        "label": "Monitor"
+      },
+      {
+        "key": "acMode",
+        "type": "string",
+        "label": "AC mode"
+      },
+      {
+        "key": "batteryMode",
+        "type": "string",
+        "label": "Battery mode"
+      }
+    ]
+  },
+  "omarchy": {
+    "clonedFrom": "omarchy.power"
+  }
+}
