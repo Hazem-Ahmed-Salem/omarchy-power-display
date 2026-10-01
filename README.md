@@ -13,6 +13,17 @@ Service   →  Supervisor    →  PowerProfileService · DisplayRefreshService �
 
 ---
 
+## 📋 Requirements & Dependencies
+
+The plugin runs seamlessly on Omarchy with standard system utilities:
+- **Hyprland** (`hyprctl` for monitor detection and refresh rate switching)
+- **UPower & system D-Bus** (standard battery metrics, health, and status tracking)
+- **Power Profiles daemon** (`powerprofilesctl`, `system76-power`, or `tuned` via D-Bus)
+- **libnotify** (`notify-send` for low-battery alert popups)
+- **Quickshell / Qt 6 QML** (provided by Omarchy)
+
+---
+
 ## 📥 Installation Guide
 
 ### Method 1: Using `omarchy plugin` (Recommended)
