@@ -134,21 +134,21 @@ Service   →  Supervisor    →  PowerProfileService · DisplayRefreshService �
 
 ---
 
-## ⚡ Why Use This Plugin?
+## 📸 Preview
 
-Instead of running separate plugins for battery status, power profiles, and display refresh rates, **Omarchy Power & Display Profiles** brings everything together into a unified control center:
+### Status Bar Widget
+Compact status bar chip with real-time battery percentage, dynamic charging states, right-click toggle, and low-battery alert warning:
 
-| Feature | Stock `omarchy.power` ❌ | Separate Plugins ⚠️ | This Unified Plugin ✅ |
-| :--- | :--- | :--- | :--- |
-| **Status Bar** | Basic % or icon | Multiple scattered chips | Single chip with tooltip, % toggle, and alert blinking |
-| **Battery Health & ETA** | Simple duration | Inconsistent | Health % + Wall-clock ETA (`54m · 14:40`) |
-| **Power Draw Graph** | Instant W only | None | 15-minute history canvas with peak callouts |
-| **Top CPU Processes** | None | None | Stacked bar with collision-free labels (`brave ×12`) |
-| **Power Profiles** | Active only | Active only | ON AC / ON BATTERY remembered independently |
-| **Display Refresh Rates** | None / manual | Separate plugin | Multi-monitor auto-detection & resolution-preserving AC/Battery switching |
-| **Manual Hz Overrides** | None | Separate widget | Instant Hz override buttons directly in the power panel |
-| **Power Saver Options** | None | Basic | 60Hz/Battery mode, Brightness, Wi-Fi PS, Animations, GPU DPM, Panel Power |
-| **Low-Battery Alert** | Fixed threshold | Separate service | Interactive 5–40% slider in the panel + bundled alert service |
+<p align="center">
+  <img src="assets/bar_widget.png" alt="Status Bar Widget" width="160" />
+</p>
+
+### Interactive Control Panel Flyout
+Clicking the bar widget opens the complete power and display control center:
+
+<p align="center">
+  <img src="assets/panel_flyout.png" alt="Power & Display Profiles Control Panel" width="460" />
+</p>
 
 ---
 
