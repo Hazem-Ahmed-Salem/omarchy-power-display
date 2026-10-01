@@ -17,8 +17,10 @@ Service   →  Supervisor    →  PowerProfileService · DisplayRefreshService �
 
 1. **Add and enable the plugin**:
    ```bash
-   # From local source:
-   omarchy plugin add "/home/zoma/Side Projects/omarchy-power-display" --enable
+   # From local source (from within the repository folder):
+   omarchy plugin add "$PWD" --enable
+   # Or using absolute path:
+   omarchy plugin add "/path/to/omarchy-power-display" --enable
 
    # Or from Git:
    omarchy plugin add https://github.com/Hazem-Ahmed-Salem/omarchy-power-display.git --enable
@@ -43,7 +45,9 @@ Service   →  Supervisor    →  PowerProfileService · DisplayRefreshService �
 
 1. **Link or copy the plugin into your Omarchy plugins directory**:
    ```bash
-   ln -sfn "/home/zoma/Side Projects/omarchy-power-display" ~/.config/omarchy/plugins/hazem.power
+   ln -sfn "$PWD" ~/.config/omarchy/plugins/hazem.power
+   # Or using absolute path:
+   # ln -sfn "/path/to/omarchy-power-display" ~/.config/omarchy/plugins/hazem.power
    ```
    *(Or clone directly via Git)*:
    ```bash
@@ -175,7 +179,7 @@ Instead of running separate plugins for battery status, power profiles, and disp
 - **Multi-Monitor Auto-Detection**: Discovers all connected displays dynamically (`eDP`, `HDMI`, `DP`, USB-C) at startup and on hotplug.
 - **Strict Resolution Preservation**: Never alters screen resolution or resets window positions, scaling, or workspaces. Only refresh rates switch.
 - **Manual Refresh Rate Overrides**: One-click buttons to instantly switch between supported refresh rates for the active display resolution.
-- **AC vs. Battery Display Profiles**: Configure preferred refresh rates for AC (e.g. 165Hz/144Hz) and Battery (e.g. 60Hz) per monitor.
+- **AC vs. Battery Display Profiles**: Configure preferred refresh rates for AC (e.g. 144Hz/120Hz) and Battery (e.g. 60Hz) per monitor.
 - **Safe Hyprland Integration**: Uses Hyprland's Lua runtime evaluation (`hyprctl eval 'hl.monitor(...)'`) with numeric tolerance (~0.1 Hz) and post-switch verification.
 
 ### 🍃 Power Saver Desktop Options
@@ -235,8 +239,8 @@ Settings are saved in `~/.config/omarchy/shell.json`:
     {
       "name": "eDP-1",
       "enabled": true,
-      "acMode": "2560x1600@165",
-      "batteryMode": "2560x1600@60"
+      "acMode": "1920x1080@144",
+      "batteryMode": "1920x1080@60"
     }
   ]
 }
